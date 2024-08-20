@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="Virangya Senevirathne" />
+
+    <title>{% block title %}{% endblock %}</title>
+
+    {% block styles %}
+      {{ bootstrap.load_css() }}
+      <link rel="stylesheet" type="text/css" href="{{  url_for('static', filename='css/styles.css')  }}" />
+    {% endblock %}
+
+  </head>
+  <body>
+    {% block content %}{% endblock %}
+
+    {% include 'footer.html' %}
+      <script>
+
+          $(document).ready(function() {
+            $('#enter-list-item').on('keydown', function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+
+                    listName = $("#list-name").text()
+                    if(listName == ""){
+                        var today = new Date();
+                        var date = today.getFullYear() + '/' + (today.getMonth() + 1) + '/' + today.getDate();
+
+                        $("#list-name").text("To Do List: "+date)
+                    }
+
+                    // Get the value from the input field
+                    var inputValue = $(this).val();
+
+                    // Check if the input is not empty
+                    if (inputValue.trim() !== "") {
+                        // Create a new checkbox
+                        var checkbox = $('<input />', { type: 'checkbox', class: 'todo-checkbox' });
+
+                        // Create a new label
+                        var label = $('<label />').text(inputValue);
+
+                        // Create a new div to wrap checkbox and label
+                        var itemDiv = $('<div />', { class: 'list-item' });
+
+                        itemDiv.append(checkbox).append(label);
+
+                        // Add the checkbox and label to the #todoList div
+                        $('#todoList').append(itemDiv);
+
+                        // Clear the input field
+                        $(this).val('');
+
+                    }
+                }
+            });
+        });
+
+      </script>
+
+      {% block jsscript %}
+
+      {% endblock %}
+
+
+  </body>
+</html>
