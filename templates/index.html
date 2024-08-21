@@ -1,3 +1,4 @@
+{% from "bootstrap5/form.html" import render_form %}
 {% extends 'base.html' %}
 {% block title %}Your To Do Lists{% endblock %}
 
@@ -35,19 +36,15 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Register Account</h2>
-            <form id="registerForm">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
-                
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-                
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-                
-                <button type="submit">Submit</button>
-            </form>
-            <p>Already a registered member? <a href="#">Log in here.</p>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <p class=flash>{{ message }}</p>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {{ render_form(form, novalidate=True) }}
+            <p>Already a registered member? <a href="{{ url_for('login') }}">Log in here.</p>
         </div>
     </div>
 {% endblock %}
@@ -55,6 +52,37 @@
 
 {% block jsscript %}
       <script>
+            $(document).ready(function() {
 
+                var openModal = {{ open_modal }};
+                var $modal = $('#registerModal');
+
+                if(openModal==1){
+                    $modal.show();
+                }
+
+                // Get the button that opens the modal
+                var $btn = $('#openModal');
+
+                // Get the <span> element that closes the modal
+                var $close = $('.close');
+
+                // When the user clicks the button, open the modal
+                $btn.on('click', function() {
+                    $modal.show();
+                });
+
+                // When the user clicks on <span> (x), close the modal
+                $close.on('click', function() {
+                    $modal.hide();
+                });
+
+                // When the user clicks anywhere outside of the modal, close it
+                $(window).on('click', function(event) {
+                    if ($(event.target).is($modal)) {
+                        $modal.hide();
+                    }
+                });
+            });
       </script>
 {% endblock %}
