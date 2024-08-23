@@ -45,7 +45,7 @@
                         var checkbox = $('<input />', { type: 'checkbox', class: 'todo-checkbox' });
 
                         // Create a new label
-                        var label = $('<label />').text(inputValue);
+                        var label = $('<label />', { class: 'todo-label' }).text(inputValue);
 
                         // Create a new div to wrap checkbox and label
                         var itemDiv = $('<div />', { class: 'list-item' });

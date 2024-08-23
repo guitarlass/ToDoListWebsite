@@ -1,6 +1,6 @@
 {% from "bootstrap5/form.html" import render_form %}
 {% extends 'base.html' %}
-{% block title %}Your To Do Lists{% endblock %}
+{% block title %}Your To Do Lists : Login{% endblock %}
 
 {% block content %}
 <style>
@@ -20,6 +20,5 @@
         {% endif %}
       {% endwith %}
       {{ render_form(form, novalidate=True) }}
-<!--      <p>Already a registered member? <a href="{{ url_for() }}">Log in here.</p>-->
 </main>
 {% endblock %}

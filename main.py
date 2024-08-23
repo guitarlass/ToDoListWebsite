@@ -1,6 +1,7 @@
 import os
+import datetime
 
-from flask import Flask, render_template, url_for, flash, redirect, request
+from flask import Flask, render_template, url_for, flash, redirect, request, jsonify
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String, Float, text, ForeignKey
@@ -16,9 +17,11 @@ Bootstrap5(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
 @login_manager.user_loader
 def user_loader(user_id):
     return db.get_or_404(User, user_id)
+
 
 class Base(DeclarativeBase):
     pass
@@ -83,7 +86,7 @@ def home():
     else:
         if request.method == 'POST':
             open_modal = 1
-    return render_template('index.html', form=register_form, open_modal = open_modal)
+    return render_template('index.html', form=register_form, open_modal=open_modal)
 
 
 @app.route('/profile')
@@ -91,9 +94,19 @@ def profile():
     return render_template('profile.html')
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     login_form = LoginForm()
+    if login_form.validate_on_submit():
+        user = db.session.execute(db.select(User).where(User.email == login_form.email.data)).scalar()
+        if not user:
+            flash("User not found!")
+        else:
+            if check_password_hash(user.password, login_form.password.data):
+                login_user(user)
+                return redirect(url_for("profile"))
+            else:
+                flash("Password incorrect!")
     return render_template('login.html', form=login_form)
 
 
@@ -120,6 +133,29 @@ def register():
         login_user(new_user)
         return redirect(url_for("profile"))
     return render_template("register.html", form=register_form)
+
+
+@app.route('/save_items', methods=['POST'])
+def save_items():
+    items = request.get_json()
+
+    current_date = datetime.date.today()
+
+    # Create the todo list string
+    new_list_name = "Todo list : " + current_date.strftime("%Y/%m/%d")
+
+    new_list = ToDo(name=new_list_name, user_id=current_user.id)
+    db.session.add(new_list)
+    db.session.commit()
+
+    new_list_id = new_list.id
+
+    for item in items:
+        new_list_item = ListItem(name=item['item_name'], status=item['checked'], todo_id=new_list_id)
+        db.session.add(new_list_item)
+        db.session.commit()
+
+    return jsonify({'message': "successful"})
 
 
 if __name__ == "__main__":
