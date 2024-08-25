@@ -124,3 +124,12 @@ form button:hover {
     margin-top: 70px;
     background-color: #DDDDDD;
 }
+
+#lists-menu{
+    max-width: 300px;
+}
+
+.item-name{
+    color: white;
+    text-decoration: none;
+}

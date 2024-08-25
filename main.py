@@ -4,7 +4,8 @@ import datetime
 from flask import Flask, render_template, url_for, flash, redirect, request, jsonify
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Integer, String, Float, text, ForeignKey
+from sqlalchemy import Integer, String, Float, text, ForeignKey, func
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from forms import RegisterForm, LoginForm
@@ -90,8 +91,29 @@ def home():
 
 
 @app.route('/profile')
+@login_required
 def profile():
-    return render_template('profile.html')
+    todos = db.session.query(ToDo.name, ToDo.id, func.count(ListItem.id).label('item_num')).outerjoin(ListItem,
+            ToDo.id == ListItem.todo_id).filter(
+            ToDo.user_id == current_user.id).group_by(ToDo.id).all()
+    return render_template('profile.html', todos=todos)
+
+@app.route("/list-item/<int:todo_id>")
+@login_required
+def view_list():
+    pass
+
+
+@app.route("/edit-item/<int:todo_id>")
+@login_required
+def edit_list():
+    pass
+
+
+@app.route("/del-item/<int:todo_id>")
+@login_required
+def del_list():
+    pass
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -136,6 +158,7 @@ def register():
 
 
 @app.route('/save_items', methods=['POST'])
+@login_required
 def save_items():
     items = request.get_json()
 
@@ -144,19 +167,25 @@ def save_items():
     # Create the todo list string
     new_list_name = "Todo list : " + current_date.strftime("%Y/%m/%d")
 
-    new_list = ToDo(name=new_list_name, user_id=current_user.id)
-    db.session.add(new_list)
-    db.session.commit()
-
-    new_list_id = new_list.id
-
-    for item in items:
-        new_list_item = ListItem(name=item['item_name'], status=item['checked'], todo_id=new_list_id)
-        db.session.add(new_list_item)
+    try:
+        new_list = ToDo(name=new_list_name, user_id=current_user.id)
+        db.session.add(new_list)
         db.session.commit()
 
-    return jsonify({'message': "successful"})
+        new_list_id = new_list.id
+
+        for item in items:
+            new_list_item = ListItem(name=item['item_name'], status=item['checked'], todo_id=new_list_id)
+            db.session.add(new_list_item)
+
+        db.session.commit()
+        return jsonify({"message": "To-Do list saved successfully!", "status": "success", "name": new_list_name, "todo_id": new_list_id, "list_num": len(items)})
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"message": f"An error occurred: {str(e)}", "status": "error"}), 500
+    except Exception as e:
+        return jsonify({"message": f"An unexpected error occurred: {str(e)}", "status": "error"}), 500
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
