@@ -100,8 +100,10 @@ def profile():
 
 @app.route("/list-item/<int:todo_id>")
 @login_required
-def view_list():
-    pass
+def view_list(todo_id):
+    list_items = db.session.execute(db.select(ListItem).where(ListItem.todo_id == todo_id)).scalars()
+    todo = db.session.execute(db.select(ToDo).where(ToDo.id == todo_id)).scalar()
+    return render_template("list.html", list_items=list_items, todo=todo)
 
 
 @app.route("/edit-item/<int:todo_id>")
@@ -112,9 +114,18 @@ def edit_list():
 
 @app.route("/del-item/<int:todo_id>")
 @login_required
-def del_list():
-    pass
-
+def del_list(todo_id):
+    todo = db.session.execute(db.select(ToDo).where(ToDo.id == todo_id)).scalar_one_or_none()
+    if todo:
+        db.session.delete(todo)
+        db.session.commit()
+        flash("Successfully deleted!", "success")
+    else:
+        flash("Selected todo not found!", "error")
+    todos = db.session.query(ToDo.name, ToDo.id, func.count(ListItem.id).label('item_num')).outerjoin(ListItem,
+            ToDo.id == ListItem.todo_id).filter(
+            ToDo.user_id == current_user.id).group_by(ToDo.id).all()
+    return redirect(url_for("profile"))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -179,7 +190,7 @@ def save_items():
             db.session.add(new_list_item)
 
         db.session.commit()
-        return jsonify({"message": "To-Do list saved successfully!", "status": "success", "name": new_list_name, "todo_id": new_list_id, "list_num": len(items)})
+        return jsonify({"message": "To-Do list saved successfully!", "status": "success", "name": new_list_name, "todo_id": new_list_id, "item_num": len(items)})
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({"message": f"An error occurred: {str(e)}", "status": "error"}), 500

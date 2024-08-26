@@ -1,0 +1,34 @@
+{% from "bootstrap5/form.html" import render_form %}
+{% extends 'base.html' %}
+{% block title %}Your To Do Lists{% endblock %}
+
+{% block content %}
+
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <div class="container-fluid">
+          <span>Your To Do Lists</span>
+        </div>
+      </nav>
+
+      <main class="flex-shrink-0">
+        <div class="container" id="content">
+          <input class="text-color-grey" type="text" id="enter-list-item" placeholder="Type a list item and press enter" />
+          <div id="todoList">
+              {% for item in list_items %}
+              <div class="list-item"><input type="checkbox" {% if condition %}checked{% endif %} > class="todo-checkbox"  /><label class="todo-label">{{ item.name }}</label></div>
+              {% endfor %}
+          </div>
+
+        </div>
+      </main>
+{% endblock %}
+
+
+{% block jsscript %}
+      <script>
+            $(document).ready(function() {
+
+
+            });
+      </script>
+{% endblock %}
