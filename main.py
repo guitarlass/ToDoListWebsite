@@ -48,7 +48,8 @@ class ToDo(db.Model):
     name: Mapped[str] = mapped_column(String(250), nullable=False)
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("tbl_user.id"))
-    user = relationship("User", backref="tbl_user")
+    user = relationship("User", backref="todos")
+    list_items = relationship("ListItem", backref="todo", cascade="all, delete-orphan")
 
 
 class ListItem(db.Model):
@@ -58,7 +59,6 @@ class ListItem(db.Model):
     status: Mapped[int] = mapped_column(Integer, default=0)
 
     todo_id: Mapped[int] = mapped_column(Integer, ForeignKey("tbl_todo.id"))
-    todo = relationship("ToDo", backref="tbl_list_item")
 
 
 with app.app_context():
@@ -74,7 +74,7 @@ def home():
         if user_exists:
             flash("User already registered! Please login.")
             return redirect(url_for("login"))
-        else:
+        else: # register a user
             new_user = User(name=register_form.name.data,
                             email=register_form.email.data,
                             password=generate_password_hash(register_form.password.data,
@@ -122,7 +122,7 @@ def del_list(todo_id):
         flash("Successfully deleted!", "success")
     else:
         flash("Selected todo not found!", "error")
-    todos = db.session.query(ToDo.name, ToDo.id, func.count(ListItem.id).label('item_num')).outerjoin(ListItem,
+        todos = db.session.query(ToDo.name, ToDo.id, func.count(ListItem.id).label('item_num')).outerjoin(ListItem,
             ToDo.id == ListItem.todo_id).filter(
             ToDo.user_id == current_user.id).group_by(ToDo.id).all()
     return redirect(url_for("profile"))
