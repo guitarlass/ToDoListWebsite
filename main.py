@@ -101,10 +101,26 @@ def profile():
 @app.route("/list-item/<int:todo_id>")
 @login_required
 def view_list(todo_id):
-    list_items = db.session.execute(db.select(ListItem).where(ListItem.todo_id == todo_id)).scalars()
     todo = db.session.execute(db.select(ToDo).where(ToDo.id == todo_id)).scalar()
+    list_items = todo.list_items
     return render_template("list.html", list_items=list_items, todo=todo)
 
+
+@app.route("/del-item/<int:list_item_id>")
+@login_required
+def del_item(list_item_id):
+    list_item = db.session.execute(db.select(ListItem).where(ListItem.id == list_item_id)).scalar_one_or_none()
+    todo_id = list_item.todo_id
+    if list_item:
+        db.session.delete(list_item)
+        db.session.commit()
+        flash("Successfully deleted!", "success")
+    else:
+        flash("Selected item not found!", "error")
+        # todos = db.session.query(ToDo.name, ToDo.id, func.count(ListItem.id).label('item_num')).outerjoin(ListItem,
+        #     ToDo.id == ListItem.todo_id).filter(
+        #     ToDo.user_id == current_user.id).group_by(ToDo.id).all()
+    return redirect(url_for("view_list", todo_id=todo_id))
 
 @app.route("/edit-item/<int:todo_id>")
 @login_required
@@ -122,10 +138,13 @@ def del_list(todo_id):
         flash("Successfully deleted!", "success")
     else:
         flash("Selected todo not found!", "error")
-        todos = db.session.query(ToDo.name, ToDo.id, func.count(ListItem.id).label('item_num')).outerjoin(ListItem,
-            ToDo.id == ListItem.todo_id).filter(
-            ToDo.user_id == current_user.id).group_by(ToDo.id).all()
+        # todos = db.session.query(ToDo.name, ToDo.id, func.count(ListItem.id).label('item_num')).outerjoin(ListItem,
+        #     ToDo.id == ListItem.todo_id).filter(
+        #     ToDo.user_id == current_user.id).group_by(ToDo.id).all()
     return redirect(url_for("profile"))
+
+
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -176,7 +195,7 @@ def save_items():
     current_date = datetime.date.today()
 
     # Create the todo list string
-    new_list_name = "Todo list : " + current_date.strftime("%Y/%m/%d")
+    new_list_name = "Todo list : " + current_date.strftime("%Y/%m/%d %H:%M")
 
     try:
         new_list = ToDo(name=new_list_name, user_id=current_user.id)

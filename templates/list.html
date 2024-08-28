@@ -6,16 +6,75 @@
 
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
-          <span>Your To Do Lists</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                    aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link active fs-5" aria-current="page" href="#">guitarlass@gmail.com</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fs-5" aria-current="page" href="#">
+                            New List
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                 class="bi bi-plus-lg" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                      d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fs-5" aria-current="page" href="{{ url_for('logout')}}">logout</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-      </nav>
+    </nav>
+
+    <nav class="navbar navbar-expand-md nav2">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Your To Do Lists</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse1"
+                    aria-controls="navbarCollapse1" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse1">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link active fs-5" aria-current="page" href="#" id="list-name"></a>
+                    </li>
+                </ul>
+                <button class="btn btn-success" type="submit" id="saveEditedList">Save List</button>
+            </div>
+        </div>
+    </nav>
 
       <main class="flex-shrink-0">
-        <div class="container" id="content">
+        <div class="container" id="">
+            {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
           <input class="text-color-grey" type="text" id="enter-list-item" placeholder="Type a list item and press enter" />
           <div id="todoList">
               {% for item in list_items %}
-              <div class="list-item"><input type="checkbox" {% if condition %}checked{% endif %} > class="todo-checkbox"  /><label class="todo-label">{{ item.name }}</label></div>
+              <div class="list-item">
+                  <input type="checkbox" {% if condition %}checked{% endif %} class="todo-checkbox"  />
+                  <label class="todo-label">{{ item.name }}</label>
+                  <a href="{{ url_for('del_item', list_item_id = item.id) }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                    </svg>
+                  </a>
+              </div>
               {% endfor %}
           </div>
 

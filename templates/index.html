@@ -36,12 +36,14 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Register Account</h2>
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                {% for message in messages %}
-                  <p class=flash>{{ message }}</p>
-                {% endfor %}
-              {% endif %}
+            {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
             {% endwith %}
             {{ render_form(form, novalidate=True) }}
             <p>Already a registered member? <a href="{{ url_for('login') }}">Log in here.</p>
